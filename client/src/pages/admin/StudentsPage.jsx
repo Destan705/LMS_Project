@@ -1,7 +1,8 @@
 // Task 8: the admin's list of student accounts (GET /api/admin/students).
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { useTitle } from '../../hooks/useTitle.js';
+import { useNotice } from '../../hooks/useNotice.js';
 import { formatDate } from '../../format.js';
 import LoadState from '../../components/LoadState.jsx';
 import Alert from '../../components/Alert.jsx';
@@ -10,7 +11,7 @@ import Alert from '../../components/Alert.jsx';
 export default function StudentsPage() {
   useTitle('Students');
   const { data, error, loading } = useApi('/api/admin/students');
-  const notice = useLocation().state?.notice;
+  const [notice] = useNotice(); // e.g. "Account created for ..."; gone after a refresh
 
   return (
     <>

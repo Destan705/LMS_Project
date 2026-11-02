@@ -1,6 +1,6 @@
 {
   "name": "temel-lms-server",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Basic LMS: Express API (backend)",
   "main": "src/server.js",

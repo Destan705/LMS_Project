@@ -608,3 +608,29 @@ p.empty { margin-top: 1rem; }
 .danger-zone .button { margin-top: 0.75rem; }
 .button-delete { background: var(--surface); color: var(--error); border-color: var(--error); }
 .button-delete:hover { background: var(--error); color: #fff; }
+
+/* ---------- Week 4 ---------- */
+
+/* Progress report (Task 16) */
+.report-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-top: 1.5rem; }
+.report-filters label[for] { font-weight: 700; }
+.report-filters select { width: auto; min-width: 16rem; max-width: 100%; }
+.report-filters .checkbox { margin: 0; }
+.report-course h2 a { color: var(--ink); text-decoration: none; }
+.report-course h2 a:hover { text-decoration: underline; }
+.stats-small { margin: 1rem 0; }
+.stats-small div { padding: 0.75rem 1rem; }
+.stats-small dd { font-size: 1.5rem; }
+.cell-sub { display: block; }
+.cell-progress { min-width: 13rem; }
+.cell-progress .progress { margin-top: 0; }
+.cell-progress .progress-text { font-size: 0.875rem; }
+
+/* Week 4 fix (BUG-03): on phones the report table fits the screen instead of scrolling sideways.
+   The exam date column is hidden there; it's still in the CSV download. */
+@media (max-width: 40rem) {
+  .report-table { min-width: 0; }
+  .report-table th, .report-table td { padding: 0.6rem 0.6rem; }
+  .cell-progress { min-width: 7.5rem; }
+  .hide-small { display: none; }
+}

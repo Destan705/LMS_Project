@@ -17,6 +17,7 @@ import LessonFormPage from './pages/admin/LessonFormPage.jsx';
 import StudentsPage from './pages/admin/StudentsPage.jsx';
 import StudentFormPage from './pages/admin/StudentFormPage.jsx';
 import AdminExamPage from './pages/admin/ExamPage.jsx';
+import ReportPage from './pages/admin/ReportPage.jsx';
 import MyCoursesPage from './pages/student/MyCoursesPage.jsx';
 import StudentCoursePage from './pages/student/CoursePage.jsx';
 import LessonPage from './pages/student/LessonPage.jsx';
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="courses/:courseId/exam" element={<AdminExamPage />} />
           <Route path="students" element={<StudentsPage />} />
           <Route path="students/new" element={<StudentFormPage />} />
+          <Route path="reports" element={<ReportPage />} />
         </Route>
 
         {/* Student pages */}

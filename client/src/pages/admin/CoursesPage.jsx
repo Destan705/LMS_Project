@@ -1,9 +1,10 @@
 // Task 6: the admin's course list (GET /api/admin/courses).
 // Archived courses are hidden by default; a checkbox shows them.
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi.js';
 import { useTitle } from '../../hooks/useTitle.js';
+import { useNotice } from '../../hooks/useNotice.js';
 import { formatDate } from '../../format.js';
 import LoadState from '../../components/LoadState.jsx';
 import StatusTag from '../../components/StatusTag.jsx';
@@ -14,7 +15,7 @@ export default function CoursesPage() {
   useTitle('Courses');
   const { data, error, loading } = useApi('/api/admin/courses');
   const [showArchived, setShowArchived] = useState(false);
-  const notice = useLocation().state?.notice; // e.g. "Course created." after saving
+  const [notice] = useNotice(); // e.g. "Course created." after saving; gone after a refresh
 
   const all = data?.courses ?? [];
   const archivedCount = all.filter((c) => c.status === 'archived').length;

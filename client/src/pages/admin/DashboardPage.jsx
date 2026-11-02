@@ -31,6 +31,9 @@ export default function DashboardPage() {
             <Link className="button button-secondary" to="/admin/students">
               Manage students
             </Link>
+            <Link className="button button-secondary" to="/admin/reports">
+              Progress report
+            </Link>
           </div>
 
           <section aria-labelledby="users-heading">

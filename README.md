@@ -4,10 +4,23 @@ A basic Learning Management System built as a one-month internship project.
 Administrators create courses and lessons, assign students and track their progress.
 Students see their assigned courses, complete lessons and take a short exam.
 
-**Status:** Weeks 1, 2 and 3 done: setup, database, login and roles (Week 1); courses, lessons,
-student accounts, course assignment and the student's course and lesson screens (Week 2).
-Week 3: lesson completion, progress bars, exams with server-side scoring, and the student summary.
-See [`docs/week3-backend.md`](docs/week3-backend.md) for how the Week 3 back end works.
+**Status: version 1.0.0, all 4 weeks (Tasks 1–19) done.**
+
+| Week | What was built |
+| --- | --- |
+| 1 | Setup, database, login/logout, admin and student roles |
+| 2 | Courses, lessons, student accounts, course assignment, the student's course and lesson screens |
+| 3 | Lesson completion, progress bars, exams with server-side scoring, the student summary |
+| 4 | Admin progress report (with CSV download), functional testing, bug fixes, documentation and sample data |
+
+**Documents**
+
+| File | What's in it |
+| --- | --- |
+| [`docs/user-guide.md`](docs/user-guide.md) | How to use the app, for admins and students |
+| [`docs/database.md`](docs/database.md) | Database design and diagram |
+| [`docs/week3-backend.md`](docs/week3-backend.md) | How the Week 3 back end works (completion, exams, scoring) |
+| [`docs/test-report.md`](docs/test-report.md) | Functional test scenarios, results and the bug list (Task 17) |
 
 ## How it's built
 
@@ -68,12 +81,19 @@ so the browser only ever talks to one address.
 | Role | Email | Password | What they see |
 | --- | --- | --- | --- |
 | Admin | admin@lms.local | Admin123! | Everything |
-| Student | ayse@lms.local | Student123! | 2 courses (also assigned to a draft, which stays hidden) |
-| Student | mehmet@lms.local | Student123! | 1 course |
+| Student | ayse@lms.local | Student123! | 2 courses (also assigned to a draft, which stays hidden). Nothing done yet: use her for demos |
+| Student | mehmet@lms.local | Student123! | 1 course: 2 of 3 lessons done and the exam taken (score 67), so the report has data |
 | Student | zeynep@lms.local | Student123! | No courses yet |
 
-The sample data has two published courses with three lessons each, and one draft course.
+The sample data has two published courses with three lessons each (one with a 3-question exam),
+one draft course, and some progress for Mehmet. To get back to this clean starting point at any
+time, run `npm run db:reset` then `npm run seed`.
 Running `npm run seed` creates an admin, so setup is locked afterwards.
+
+### Try the Week 4 report
+
+Log in as the admin and click **Reports** in the top bar. You'll see Mehmet's progress (2 of 3 lessons)
+and exam score (67). Choose a course to filter, or click **Download CSV** to open it in Excel.
 
 ### Try the Week 3 flow
 
@@ -97,7 +117,7 @@ Running `npm run seed` creates an admin, so setup is locked afterwards.
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Start the API and the React app, restarting on changes |
-| `npm test` | Run the API tests |
+| `npm test` | Run the API tests (95 tests) |
 | `npm run db:init` | Create the database and tables if they don't exist |
 | `npm run db:reset` | Delete the database and create an empty one |
 | `npm run seed` | Add demo accounts and sample courses (skips ones that already exist) |
@@ -125,11 +145,13 @@ client/                      React app (frontend)
     api.js                   All requests to the backend
     auth/AuthContext.jsx     Who is logged in; login, logout, setup
     format.js                Dates, plurals, safe links
-    hooks/                   useApi (load data), useAction (send changes), useTitle
+    hooks/                   useApi (load data), useAction (send changes), useTitle,
+                             useNotice (one-time messages)
     components/              Layout (top bar), RequireRole, FormField, LoadState, ...
     pages/                   LoginPage, SetupPage, NotFound, ...
-      admin/                 Dashboard, courses, course page, lesson form, students
-      student/               My courses, course page, lesson page
+      admin/                 Dashboard, courses, course page, lesson form, students,
+                             exam (Week 3), progress report (Week 4)
+      student/               My courses, course page, lesson page, exam, my progress
     styles.css
 server/                      Express API (backend)
   src/
@@ -142,15 +164,18 @@ server/                      Express API (backend)
     middleware/auth.js       requireLogin and requireRole (Task 5)
     middleware/security.js   Requires JSON for changes (CSRF protection)
     controllers/             Request handlers: auth, setup, admin, course, lesson,
-                             account, enrollment, student, exam (Week 3)
+                             account, enrollment, student, exam (Week 3), report (Week 4)
     models/                  Database access: user, course, lesson, enrollment,
-                             progress, exam (Week 3)
+                             progress, exam (Week 3), report (Week 4)
     db/                      schema.sql (Task 3), database scripts
   tests/auth.test.js         Week 1 tests: setup, login and role checks
   tests/courses.test.js      Week 2 tests: courses, lessons, students, access control
   tests/week3.test.js        Week 3 tests: completion, progress, exams, scoring, summary
+  tests/report.test.js       Week 4 tests: the admin progress report
 docs/database.md             Database design and diagram
 docs/week3-backend.md        Week 3: the new routes, what they return, and why
+docs/test-report.md          Week 4: functional test scenarios, results, bug list
+docs/user-guide.md           How to use the app
 ```
 
 ## API routes
@@ -163,6 +188,7 @@ docs/week3-backend.md        Week 3: the new routes, what they return, and why
 | POST | `/api/auth/logout` | Logged-in users | Log out (UC-02) |
 | GET | `/api/admin/dashboard` | Admin | Summary numbers and all accounts |
 | GET | `/api/admin/users` | Admin | All accounts |
+| GET | `/api/admin/report` | Admin | Every course with its students' progress and exam scores (Task 16) |
 | GET, POST | `/api/admin/courses` | Admin | List courses / create a course (Task 6) |
 | GET, PATCH, DELETE | `/api/admin/courses/:id` | Admin | A course with its lessons and students / edit, publish, archive it / delete it for good |
 | POST | `/api/admin/courses/:id/lessons` | Admin | Add a lesson at the end (Task 7) |
@@ -202,6 +228,7 @@ they can't even find out which other courses exist (SEC-02).
 | `/admin/courses/:id/lessons/:lessonId/edit` | Edit lesson form | Admin |
 | `/admin/students` | Student accounts | Admin |
 | `/admin/students/new` | New student form | Admin |
+| `/admin/reports` | Progress report: filter by course, download as CSV (Week 4) | Admin |
 | `/my-courses` | My courses | Student |
 | `/my-courses/:id` | A course's lessons, in order | Student |
 | `/my-courses/:id/lessons/:lessonId` | Reading a lesson, with previous/next and "Mark as completed" | Student |
@@ -245,4 +272,10 @@ they can't even find out which other courses exist (SEC-02).
 
 All three are checked by `server/tests/week3.test.js`.
 
-**Not built yet:** the admin progress report (Week 4).
+## Week 4 acceptance criteria
+
+- [x] The admin can see each student's progress and exam score (Task 16, `server/tests/report.test.js`).
+- [x] The main flows were tested in the browser: 30 scenarios, all passing after fixes
+  (`docs/test-report.md`).
+- [x] Bugs found in testing are fixed (3 bugs, listed in the test report).
+- [x] The README, user guide and sample data let anyone install and try the app.

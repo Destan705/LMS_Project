@@ -7,11 +7,13 @@ const lessons = require('../controllers/lessonController');
 const accounts = require('../controllers/accountController');
 const enrollments = require('../controllers/enrollmentController');
 const exams = require('../controllers/examController');
+const reports = require('../controllers/reportController');
 
 const router = express.Router();
 
 router.get('/dashboard', admin.dashboard);
 router.get('/users', admin.listUsers);
+router.get('/report', reports.report); // Task 16: progress report
 
 // Courses (Task 6)
 router.get('/courses', courses.list);

@@ -34,6 +34,7 @@ export default function Layout() {
                 </NavLink>
                 <NavLink to="/admin/courses">Courses</NavLink>
                 <NavLink to="/admin/students">Students</NavLink>
+                <NavLink to="/admin/reports">Reports</NavLink>
               </>
             ) : (
               <>

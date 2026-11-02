@@ -6,6 +6,7 @@ const Course = require('../models/courseModel');
 const Lesson = require('../models/lessonModel');
 const Enrollment = require('../models/enrollmentModel');
 const Exam = require('../models/examModel');
+const Progress = require('../models/progressModel');
 const { closeDb } = require('./index');
 
 const DEMO_USERS = [
@@ -17,7 +18,9 @@ const DEMO_USERS = [
 
 // Two published courses with three lessons each, plus a draft to show that drafts stay hidden.
 // "students" lists who is assigned. Zeynep has no courses, to show the empty "My courses" screen.
-// "exam" (Week 3) is a short multiple-choice exam; nobody has taken it yet.
+// "exam" (Week 3) is a short multiple-choice exam.
+// "activity" (Week 4) is sample progress, so the admin's report has something to show:
+// Mehmet completed 2 lessons and took the exam. Ayşe has done nothing yet, so she's ready for a demo.
 const DEMO_COURSES = [
   {
     title: 'Introduction to Web Development',
@@ -54,6 +57,7 @@ const DEMO_COURSES = [
         { text: 'What does a browser send to a server?', optionA: 'A stylesheet', optionB: 'A database', optionC: 'A request', optionD: 'A video', correctOption: 'C' },
       ],
     },
+    activity: [{ email: 'mehmet@lms.local', lessonsCompleted: 2, examAnswers: ['B', 'A', 'A'] }],
   },
   {
     title: 'Databases with SQL',
@@ -124,7 +128,25 @@ function seedCourses() {
       const student = User.findByEmail(email);
       if (student) Enrollment.assign(student.id, course.id);
     }
+    for (const a of c.activity ?? []) seedActivity(course.id, a);
     console.log(`created course "${c.title}" (${c.status}, ${plural(c.lessons.length, 'lesson')}, ${plural(c.students.length, 'student')}${c.exam ? ', 1 exam' : ''})`);
+  }
+}
+
+// Sample progress for one student: completes the first N lessons and, if answers are given,
+// saves an exam result scored the same way as the real submit route (correct / total * 100).
+function seedActivity(courseId, { email, lessonsCompleted, examAnswers }) {
+  const student = User.findByEmail(email);
+  if (!student) return;
+  for (const lesson of Lesson.listByCourse(courseId).slice(0, lessonsCompleted)) {
+    Progress.complete(student.id, lesson.id);
+  }
+  const exam = Exam.findByCourse(courseId);
+  if (exam && examAnswers) {
+    const questions = Exam.listQuestions(exam.id);
+    const correctCount = questions.filter((q, i) => examAnswers[i] === q.correct_option).length;
+    const score = Math.round((correctCount / questions.length) * 100);
+    Exam.saveResult(student.id, exam.id, { correctCount, totalQuestions: questions.length, score });
   }
 }
 
@@ -134,8 +156,8 @@ async function seed() {
   seedCourses();
   console.log('\nDemo logins:');
   console.log('  admin@lms.local / Admin123!');
-  console.log('  ayse@lms.local  / Student123!  (2 courses; also assigned to a draft she can\'t see)');
-  console.log('  mehmet@lms.local / Student123! (1 course)');
+  console.log('  ayse@lms.local  / Student123!  (2 courses + a draft she can\'t see; nothing done yet: use her for demos)');
+  console.log('  mehmet@lms.local / Student123! (1 course; 2 lessons done, exam taken: sample data for the report)');
   console.log('  zeynep@lms.local / Student123! (no courses yet)');
   closeDb();
 }

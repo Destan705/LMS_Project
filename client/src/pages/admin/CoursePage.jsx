@@ -6,11 +6,12 @@
 // - exam: a link to the exam page (Task 13)
 // - delete: removes the course for good (archiving is the safe option)
 import { useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useApi } from '../../hooks/useApi.js';
 import { useAction } from '../../hooks/useAction.js';
 import { useTitle } from '../../hooks/useTitle.js';
+import { useNotice } from '../../hooks/useNotice.js';
 import { formatDate, plural } from '../../format.js';
 import LoadState from '../../components/LoadState.jsx';
 import StatusTag from '../../components/StatusTag.jsx';
@@ -45,7 +46,7 @@ export default function CoursePage() {
   const { courseId } = useParams();
   const { data, error, loading, setData } = useApi(`/api/admin/courses/${courseId}`);
   useTitle(data?.course.title ?? 'Course');
-  const [notice, setNotice] = useState(useLocation().state?.notice ?? null);
+  const [notice, setNotice] = useNotice(); // message from the previous page; gone after a refresh
 
   if (!data) {
     return (
